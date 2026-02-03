@@ -1,0 +1,184 @@
+@import "tailwindcss";
+
+/* Custom design tokens for CTE - Calm, Minimal, Professional */
+:root {
+  /* Primary Palette - Calm Slate/Zinc */
+  --color-primary: 71 85 105;
+  /* slate-600 */
+  --color-primary-dark: 51 65 85;
+  /* slate-700 */
+  --color-accent: 20 184 166;
+  /* teal-500 */
+  --color-accent-light: 94 234 212;
+  /* teal-300 */
+
+  /* Backgrounds */
+  --color-bg: 248 250 252;
+  /* slate-50 */
+  --color-bg-card: 255 255 255;
+  /* white */
+  --color-bg-dark: 15 23 42;
+  /* slate-900 */
+
+  /* Text */
+  --color-text: 30 41 59;
+  /* slate-800 */
+  --color-text-muted: 100 116 139;
+  /* slate-500 */
+
+  /* Energy Colors */
+  --color-energy-low: 134 239 172;
+  /* green-300 */
+  --color-energy-medium: 253 224 71;
+  /* yellow-300 */
+  --color-energy-high: 252 165 165;
+  /* red-300 */
+}
+
+/* Dark mode */
+.dark {
+  --color-bg: 15 23 42;
+  /* slate-900 */
+  --color-bg-card: 30 41 59;
+  /* slate-800 */
+  --color-text: 241 245 249;
+  /* slate-100 */
+  --color-text-muted: 148 163 184;
+  /* slate-400 */
+}
+
+/* Base styles */
+html {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+body {
+  @apply bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100;
+  @apply transition-colors duration-200;
+  margin: 0;
+  min-height: 100vh;
+}
+
+/* Focus styles for accessibility */
+*:focus-visible {
+  @apply outline-2 outline-offset-2 outline-teal-500;
+}
+
+/* Typography */
+.heading-primary {
+  @apply text-2xl md:text-3xl font-semibold text-slate-800 dark:text-slate-100;
+}
+
+.heading-secondary {
+  @apply text-lg md:text-xl font-medium text-slate-700 dark:text-slate-200;
+}
+
+.text-body {
+  @apply text-base text-slate-600 dark:text-slate-300 leading-relaxed;
+}
+
+.text-calm {
+  @apply text-sm text-slate-500 dark:text-slate-400 italic;
+}
+
+/* Button styles - base properties inline to avoid self-reference */
+.btn-primary {
+  @apply px-4 py-2.5 rounded-lg font-medium transition-all duration-200;
+  @apply focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-teal-500;
+  @apply disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply bg-teal-600 text-white hover:bg-teal-700 active:bg-teal-800;
+}
+
+.btn-secondary {
+  @apply px-4 py-2.5 rounded-lg font-medium transition-all duration-200;
+  @apply focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-teal-500;
+  @apply disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply bg-slate-200 text-slate-700 hover:bg-slate-300;
+  @apply dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600;
+}
+
+.btn-ghost {
+  @apply px-4 py-2.5 rounded-lg font-medium transition-all duration-200;
+  @apply focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-teal-500;
+  @apply disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply bg-transparent text-slate-600 hover:bg-slate-100;
+  @apply dark:text-slate-300 dark:hover:bg-slate-800;
+}
+
+/* Card styles */
+.card {
+  @apply bg-white dark:bg-slate-800 rounded-xl shadow-sm;
+  @apply border border-slate-200 dark:border-slate-700;
+  @apply p-6;
+}
+
+.card-recommendation {
+  @apply bg-white dark:bg-slate-800 rounded-xl shadow-sm;
+  @apply border border-slate-200 dark:border-slate-700;
+  @apply p-6;
+  @apply border-l-4 border-l-teal-500;
+  @apply bg-gradient-to-br from-white to-teal-50/30;
+  @apply dark:from-slate-800 dark:to-teal-900/20;
+}
+
+/* Input styles */
+.input {
+  @apply w-full px-4 py-2.5 rounded-lg;
+  @apply bg-white dark:bg-slate-800;
+  @apply border border-slate-300 dark:border-slate-600;
+  @apply text-slate-800 dark:text-slate-100;
+  @apply placeholder:text-slate-400 dark:placeholder:text-slate-500;
+  @apply focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20;
+  @apply transition-all duration-200;
+}
+
+.label {
+  @apply block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5;
+}
+
+/* Energy badges - inline base properties */
+.energy-low {
+  @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium;
+  @apply bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300;
+}
+
+.energy-medium {
+  @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium;
+  @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300;
+}
+
+.energy-high {
+  @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium;
+  @apply bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300;
+}
+
+/* Animations - subtle and calm */
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
