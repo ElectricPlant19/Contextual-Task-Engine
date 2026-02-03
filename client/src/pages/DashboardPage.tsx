@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Navbar, ContextInputPanel, RecommendationCard, TaskModal } from '../components';
 import { tasksApi } from '../services/api';
 import type { Task, TaskFormData, RecommendationContext, RecommendationResponse } from '../types';

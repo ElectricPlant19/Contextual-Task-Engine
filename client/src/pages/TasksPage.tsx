@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Navbar, TaskList, TaskModal } from '../components';
 import { tasksApi } from '../services/api';
 import type { Task, TaskFormData } from '../types';
