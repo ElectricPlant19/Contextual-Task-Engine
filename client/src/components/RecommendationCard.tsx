@@ -1,4 +1,4 @@
-import React from 'react';
+
 import type { ScoredTask, RecommendationResponse } from '../types';
 import { EnergyBadge } from './EnergyBadge';
 

@@ -1,4 +1,4 @@
-import React from 'react';
+
 import type { EnergyLevel, RecommendationContext } from '../types';
 
 interface ContextInputPanelProps {
