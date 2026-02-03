@@ -84,16 +84,16 @@ export function TasksPage() {
         <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
             <Navbar />
 
-            <main className="max-w-2xl mx-auto px-4 py-8">
+            <main className="max-w-2xl mx-auto px-4 py-6 sm:py-8 pb-24 sm:pb-8">
                 {/* Header */}
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                     <div>
-                        <h1 className="heading-primary">All Tasks</h1>
-                        <p className="text-calm">Manage your task list</p>
+                        <h1 className="heading-primary text-2xl sm:text-3xl">All Tasks</h1>
+                        <p className="text-calm text-sm sm:text-base">Manage your task list</p>
                     </div>
                     <button
                         onClick={() => setShowModal(true)}
-                        className="btn-primary"
+                        className="btn-primary py-3 sm:py-2.5 w-full sm:w-auto touch-manipulation"
                     >
                         + Add Task
                     </button>
