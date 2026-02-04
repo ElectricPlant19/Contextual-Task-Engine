@@ -42,6 +42,7 @@ jobs:
       - name: Build APK with Gradle
         uses: gradle/gradle-build-action@v2
         with:
+          gradle-version: 8.6
           project-subdirectory: client/android
           arguments: assembleDebug
 
