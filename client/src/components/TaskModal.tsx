@@ -62,16 +62,16 @@ export function TaskModal({ isOpen, onClose, onSubmit, task, isLoading }: TaskMo
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             {/* Backdrop */}
             <div
                 className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm"
                 onClick={onClose}
             />
 
-            {/* Modal - Full width on mobile, centered on desktop */}
-            <div className="relative bg-white dark:bg-slate-800 rounded-t-2xl sm:rounded-2xl shadow-xl w-full sm:max-w-lg sm:mx-4 animate-slide-up max-h-[85vh] sm:max-h-[90vh] flex flex-col pb-safe">
-                <form onSubmit={handleSubmit} className="flex flex-col h-full">
+            {/* Modal - Centered on all screens */}
+            <div className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-lg animate-slide-up max-h-[80vh] flex flex-col overflow-hidden">
+                <form onSubmit={handleSubmit} className="flex flex-col max-h-[80vh]">
                     {/* Header */}
                     <div className="px-4 sm:px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
                         <h2 className="heading-secondary text-lg">
@@ -80,7 +80,7 @@ export function TaskModal({ isOpen, onClose, onSubmit, task, isLoading }: TaskMo
                         <button
                             type="button"
                             onClick={onClose}
-                            className="sm:hidden p-2 text-slate-400 hover:text-slate-600"
+                            className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
                             aria-label="Close"
                         >
                             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -89,8 +89,8 @@ export function TaskModal({ isOpen, onClose, onSubmit, task, isLoading }: TaskMo
                         </button>
                     </div>
 
-                    {/* Content - Scrollable */}
-                    <div className="px-4 sm:px-6 py-4 space-y-4 overflow-y-auto flex-1">
+                    {/* Content - Scrollable with constrained height */}
+                    <div className="px-4 sm:px-6 py-4 space-y-4 overflow-y-auto flex-1 min-h-0">
                         {error && (
                             <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-sm">
                                 {error}
