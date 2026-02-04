@@ -42,6 +42,7 @@ jobs:
       - name: Build APK with Gradle
         working-directory: ./client/android
         run: |
+          sed -i 's/\r$//' gradlew
           chmod +x gradlew
           ./gradlew assembleDebug
 
