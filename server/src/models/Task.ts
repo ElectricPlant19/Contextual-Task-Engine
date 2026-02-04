@@ -12,6 +12,8 @@ export interface ITask extends Document {
     deadline?: Date;
     createdAt: Date;
     completedAt?: Date;
+    recurrence: 'none' | 'daily' | 'weekly' | 'monthly';
+    progress: number;
 }
 
 const taskSchema = new Schema<ITask>({
@@ -52,6 +54,17 @@ const taskSchema = new Schema<ITask>({
     },
     completedAt: {
         type: Date,
+    },
+    recurrence: {
+        type: String,
+        enum: ['none', 'daily', 'weekly', 'monthly'],
+        default: 'none',
+    },
+    progress: {
+        type: Number,
+        min: 0,
+        max: 100,
+        default: 0,
     },
 });
 

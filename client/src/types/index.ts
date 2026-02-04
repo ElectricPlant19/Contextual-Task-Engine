@@ -18,6 +18,8 @@ export interface Task {
     deadline?: string;
     createdAt: string;
     completedAt?: string;
+    recurrence?: 'none' | 'daily' | 'weekly' | 'monthly';
+    progress?: number;
 }
 
 export interface TaskFormData {
@@ -26,6 +28,8 @@ export interface TaskFormData {
     energyRequired: EnergyLevel;
     estimatedTimeMinutes: number;
     deadline: string;
+    recurrence: 'none' | 'daily' | 'weekly' | 'monthly';
+    progress: number;
 }
 
 // Context types

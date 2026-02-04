@@ -25,7 +25,7 @@ export const getTasks = async (req: AuthRequest, res: Response): Promise<void> =
  */
 export const createTask = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-        const { title, description, energyRequired, estimatedTimeMinutes, deadline } = req.body;
+        const { title, description, energyRequired, estimatedTimeMinutes, deadline, recurrence } = req.body;
 
         const task = new Task({
             userId: req.userId,
@@ -34,6 +34,7 @@ export const createTask = async (req: AuthRequest, res: Response): Promise<void>
             energyRequired,
             estimatedTimeMinutes,
             deadline: deadline ? new Date(deadline) : undefined,
+            recurrence: recurrence || 'none',
         });
 
         await task.save();
@@ -55,7 +56,7 @@ export const createTask = async (req: AuthRequest, res: Response): Promise<void>
 export const updateTask = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
         const { id } = req.params;
-        const { title, description, energyRequired, estimatedTimeMinutes, deadline } = req.body;
+        const { title, description, energyRequired, estimatedTimeMinutes, deadline, recurrence, progress } = req.body;
 
         const task = await Task.findOneAndUpdate(
             { _id: id, userId: req.userId },
@@ -65,6 +66,8 @@ export const updateTask = async (req: AuthRequest, res: Response): Promise<void>
                 energyRequired,
                 estimatedTimeMinutes,
                 deadline: deadline ? new Date(deadline) : null,
+                recurrence,
+                progress,
             },
             { new: true, runValidators: true }
         );
@@ -116,7 +119,10 @@ export const completeTask = async (req: AuthRequest, res: Response): Promise<voi
 
         const task = await Task.findOneAndUpdate(
             { _id: id, userId: req.userId },
-            { completedAt: new Date() },
+            {
+                completedAt: new Date(),
+                progress: 100,
+            },
             { new: true }
         );
 
@@ -125,8 +131,33 @@ export const completeTask = async (req: AuthRequest, res: Response): Promise<voi
             return;
         }
 
+        // Handle recurring tasks
+        if (task.recurrence && task.recurrence !== 'none') {
+            let nextDeadline = undefined;
+            if (task.deadline) {
+                const d = new Date(task.deadline);
+                if (task.recurrence === 'daily') d.setDate(d.getDate() + 1);
+                if (task.recurrence === 'weekly') d.setDate(d.getDate() + 7);
+                if (task.recurrence === 'monthly') d.setMonth(d.getMonth() + 1);
+                nextDeadline = d;
+            }
+
+            await Task.create({
+                userId: task.userId,
+                title: task.title,
+                description: task.description,
+                energyRequired: task.energyRequired,
+                estimatedTimeMinutes: task.estimatedTimeMinutes,
+                recurrence: task.recurrence,
+                deadline: nextDeadline,
+                progress: 0,
+            });
+        }
+
         res.json({
-            message: 'Nice work! Task completed.',
+            message: task.recurrence !== 'none'
+                ? 'Nice work! Task completed and next instance created.'
+                : 'Nice work! Task completed.',
             task,
         });
     } catch (error) {

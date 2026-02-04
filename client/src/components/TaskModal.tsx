@@ -15,6 +15,8 @@ const defaultFormData: TaskFormData = {
     energyRequired: 'medium',
     estimatedTimeMinutes: 30,
     deadline: '',
+    recurrence: 'none',
+    progress: 0,
 };
 
 export function TaskModal({ isOpen, onClose, onSubmit, task, isLoading }: TaskModalProps) {
@@ -30,6 +32,8 @@ export function TaskModal({ isOpen, onClose, onSubmit, task, isLoading }: TaskMo
                 energyRequired: task.energyRequired,
                 estimatedTimeMinutes: task.estimatedTimeMinutes,
                 deadline: task.deadline ? task.deadline.split('T')[0] : '',
+                recurrence: task.recurrence || 'none',
+                progress: task.progress || 0,
             });
         } else {
             setFormData(defaultFormData);
@@ -188,6 +192,24 @@ export function TaskModal({ isOpen, onClose, onSubmit, task, isLoading }: TaskMo
                             </div>
                         </div>
 
+                        {/* Recurrence */}
+                        <div>
+                            <label htmlFor="recurrence" className="label">
+                                Repeats
+                            </label>
+                            <select
+                                id="recurrence"
+                                value={formData.recurrence}
+                                onChange={(e) => handleChange('recurrence', e.target.value)}
+                                className="input text-base"
+                            >
+                                <option value="none">Does not repeat</option>
+                                <option value="daily">Daily</option>
+                                <option value="weekly">Weekly</option>
+                                <option value="monthly">Monthly</option>
+                            </select>
+                        </div>
+
                         {/* Deadline */}
                         <div>
                             <label htmlFor="deadline" className="label">
@@ -201,6 +223,26 @@ export function TaskModal({ isOpen, onClose, onSubmit, task, isLoading }: TaskMo
                                 className="input text-base"
                             />
                         </div>
+
+                        {/* Progress (Only shown when editing) */}
+                        {task && (
+                            <div>
+                                <label htmlFor="progress" className="label flex justify-between">
+                                    <span>Progress</span>
+                                    <span className="text-slate-500">{formData.progress}%</span>
+                                </label>
+                                <input
+                                    id="progress"
+                                    type="range"
+                                    min="0"
+                                    max="100"
+                                    step="5"
+                                    value={formData.progress}
+                                    onChange={(e) => handleChange('progress', parseInt(e.target.value))}
+                                    className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer dark:bg-slate-700 accent-teal-600"
+                                />
+                            </div>
+                        )}
                     </div>
 
                     {/* Footer - Fixed at bottom */}
