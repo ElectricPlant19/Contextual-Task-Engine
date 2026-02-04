@@ -182,3 +182,15 @@ body {
     transform: translateY(0);
   }
 }
+
+/* Safe area padding for iOS devices with notch/home bar */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Ensure modal content doesn't get cut off on mobile */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .pb-safe {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+}

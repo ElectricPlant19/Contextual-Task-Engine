@@ -70,7 +70,7 @@ export function TaskModal({ isOpen, onClose, onSubmit, task, isLoading }: TaskMo
             />
 
             {/* Modal - Full width on mobile, centered on desktop */}
-            <div className="relative bg-white dark:bg-slate-800 rounded-t-2xl sm:rounded-2xl shadow-xl w-full sm:max-w-lg sm:mx-4 animate-slide-up max-h-[90vh] flex flex-col">
+            <div className="relative bg-white dark:bg-slate-800 rounded-t-2xl sm:rounded-2xl shadow-xl w-full sm:max-w-lg sm:mx-4 animate-slide-up max-h-[85vh] sm:max-h-[90vh] flex flex-col pb-safe">
                 <form onSubmit={handleSubmit} className="flex flex-col h-full">
                     {/* Header */}
                     <div className="px-4 sm:px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
@@ -204,7 +204,7 @@ export function TaskModal({ isOpen, onClose, onSubmit, task, isLoading }: TaskMo
                     </div>
 
                     {/* Footer - Fixed at bottom */}
-                    <div className="px-4 sm:px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 bg-white dark:bg-slate-800">
+                    <div className="px-4 sm:px-6 py-4 pb-6 sm:pb-4 border-t border-slate-200 dark:border-slate-700 flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 bg-white dark:bg-slate-800 flex-shrink-0">
                         <button
                             type="button"
                             onClick={onClose}
