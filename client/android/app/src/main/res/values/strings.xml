@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Norman Doors</string>
+    <string name="title_activity_main">Norman Doors</string>
+    <string name="package_name">com.normandoors.app</string>
+    <string name="custom_url_scheme">com.normandoors.app</string>
+</resources>
