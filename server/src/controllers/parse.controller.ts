@@ -46,6 +46,81 @@ function extractJSON(raw: string): ParsedTask {
   throw new Error('No valid JSON found in model response');
 }
 
+function normalizeDate(text: string): string {
+  // Accept ISO already
+  const iso = text.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(iso) && !Number.isNaN(Date.parse(iso))) {
+    return iso;
+  }
+
+  // Simple common date forms: d-m-yyyy, d/m/yyyy
+  const m = /^(\d{1,2})[-\/](\d{1,2})[-\/](\d{2,4})$/.exec(text.trim());
+  if (m) {
+    let [_, d, mo, y] = m;
+    if (y.length === 2) y = '20' + y;
+    const dv = `${y.padStart(4, '0')}-${mo.padStart(2,'0')}-${d.padStart(2,'0')}`;
+    if (!Number.isNaN(Date.parse(dv))) return dv;
+  }
+
+  return '';
+}
+
+function fallbackParse(text: string): ParsedTask {
+  const lower = text.toLowerCase();
+
+  let energy: ParsedTask['energyRequired'] = 'medium';
+  if (lower.includes('low') || lower.includes('easy') || lower.includes('light')) energy = 'low';
+  if (lower.includes('high') || lower.includes('hard') || lower.includes('urgent')) energy = 'high';
+
+  let minutes = 30;
+  const timeMatch = lower.match(/(\d+)\s*(?:min|minute|minutes)/);
+  if (timeMatch) minutes = Math.max(15, Math.min(480, Math.round(parseInt(timeMatch[1], 10)/15)*15));
+  else if (lower.match(/(\d+)\s*(?:h|hour|hours)/)) {
+    const v = parseInt(lower.match(/(\d+)\s*(?:h|hour|hours)/)![1], 10);
+    minutes = Math.max(15, Math.min(480, v * 60));
+  }
+
+  let deadline = '';
+  const dateMatch = lower.match(/(\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4})/);
+  if (dateMatch) deadline = normalizeDate(dateMatch[1]);
+
+  const today = new Date();
+  if (!deadline) {
+    if (lower.includes('tomorrow')) {
+      const t = new Date(today);
+      t.setDate(t.getDate() + 1);
+      deadline = t.toISOString().slice(0, 10);
+    } else {
+      const weekdays = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+      for (const w of weekdays) {
+        if (lower.includes(w)) {
+          const target = weekdays.indexOf(w);
+          const curr = today.getDay();
+          let diff = (target - curr + 7) % 7;
+          if (diff === 0) diff = 7;
+          const dt = new Date(today);
+          dt.setDate(dt.getDate() + diff);
+          deadline = dt.toISOString().slice(0, 10);
+          break;
+        }
+      }
+    }
+  }
+
+  const title = text.trim().slice(0, 200);
+  const description = text.trim().slice(0, 1000);
+
+  return {
+    title: title || 'Untitled task',
+    description,
+    energyRequired: energy,
+    estimatedTimeMinutes: minutes,
+    deadline,
+    recurrence: lower.includes('daily') ? 'daily' : lower.includes('weekly') ? 'weekly' : lower.includes('monthly') ? 'monthly' : 'none',
+  };
+}
+
+
 /**
  * Parse natural language into structured task data via OpenRouter.
  * POST /api/tasks/parse
@@ -78,11 +153,8 @@ export const parseTaskFromText = async (req: AuthRequest, res: Response): Promis
     const today     = new Date().toISOString().split('T')[0];
     const dayOfWeek = new Date().toLocaleDateString('en-US', { weekday: 'long' });
 
-    const systemPrompt = `You are a task parser for a student productivity app.
-Today is ${dayOfWeek}, ${today}.
-Respond with ONLY a valid JSON object. No explanation, no markdown, no extra text.
-
-JSON schema:
+    const systemPrompt = `You are a strict assistant that converts a student task description into exactly one JSON object only (no markdown, no text, no code blocks).
+Output MUST be parseable JSON exactly matching this schema:
 {
   "title": string,
   "description": string,
@@ -91,6 +163,10 @@ JSON schema:
   "deadline": string,
   "recurrence": "none" | "daily" | "weekly" | "monthly"
 }
+
+If a field cannot be determined, use empty string for text fields and "medium"/30/"none" for others.
+Example output:
+{"title":"Finish essay","description":"Complete assignment","energyRequired":"high","estimatedTimeMinutes":90,"deadline":"2026-03-25","recurrence":"none"}
 
 Energy guide:
 - low: reading, reviewing notes, admin tasks, emails
@@ -183,20 +259,13 @@ Date guide (resolve from today ${today}):
       }
     }
 
-    // If all models failed, use a fallback parse so the UX still works
+    // If all models failed, use heuristic fallback parse so the UX still works
     if (!parsed) {
       console.warn('All AI models failed:', lastError);
-      const fallback: ParsedTask = {
-        title: text.trim().slice(0, 200) || 'Untitled task',
-        description: text.trim().slice(0, 1000),
-        energyRequired: 'medium',
-        estimatedTimeMinutes: 30,
-        deadline: '',
-        recurrence: 'none',
-      };
+      const fallback = fallbackParse(text);
       res.status(200).json({
         parsed: fallback,
-        warning: 'AI parsing failed, fallback values are used. Please edit details before saving.',
+        warning: 'AI parsing failed, heuristic fallback values are used. Please edit details before saving.',
         detail: lastError,
       });
       return;
