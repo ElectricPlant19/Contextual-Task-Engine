@@ -183,11 +183,20 @@ Date guide (resolve from today ${today}):
       }
     }
 
-    // If all models failed, return error (detail helps debugging on render)
+    // If all models failed, use a fallback parse so the UX still works
     if (!parsed) {
-      console.error('All AI models failed:', lastError);
-      res.status(502).json({
-        message: 'AI parsing is temporarily unavailable. Please fill in the form manually.',
+      console.warn('All AI models failed:', lastError);
+      const fallback: ParsedTask = {
+        title: text.trim().slice(0, 200) || 'Untitled task',
+        description: text.trim().slice(0, 1000),
+        energyRequired: 'medium',
+        estimatedTimeMinutes: 30,
+        deadline: '',
+        recurrence: 'none',
+      };
+      res.status(200).json({
+        parsed: fallback,
+        warning: 'AI parsing failed, fallback values are used. Please edit details before saving.',
         detail: lastError,
       });
       return;
