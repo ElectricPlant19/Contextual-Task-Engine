@@ -14,10 +14,10 @@ interface ParsedTask {
 // If one model is rate-limited, automatically try the next one
 // Note: Free models change frequently, check https://openrouter.ai/models for current options
 const OR_MODELS = [
-  'meta-llama/llama-3.3-70b-instruct:free',  // Best for JSON, but often rate limited
-  'google/gemma-3-27b-it:free',              // Good fallback
-  'microsoft/wizardlm-2-8x22b:free',         // Another option
-  'mistralai/mistral-7b-instruct:free',      // Additional fallback
+  'meta-llama/llama-3.3-70b-instruct:free',    // Best for JSON, but often rate limited
+  'qwen/qwen3-next-80b-a3b-instruct:free',     // Good fallback
+  'nousresearch/hermes-3-llama-3.1-405b:free', // Heavy fallback
+  'openrouter/free',                           // Catch-all auto router
 ];
 const OR_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
@@ -156,17 +156,18 @@ export const parseTaskFromText = async (req: AuthRequest, res: Response): Promis
     const systemPrompt = `You are a strict assistant that converts a student task description into exactly one JSON object only (no markdown, no text, no code blocks).
 Output MUST be parseable JSON exactly matching this schema:
 {
-  "title": string,
-  "description": string,
+  "title": "A short, actionable title extracted from the text. Do not just copy the whole text.",
+  "description": "Any remaining context, details, or notes from the text. Can be empty if the title covers everything.",
   "energyRequired": "low" | "medium" | "high",
   "estimatedTimeMinutes": number,
-  "deadline": string,
+  "deadline": "YYYY-MM-DD",
   "recurrence": "none" | "daily" | "weekly" | "monthly"
 }
 
 If a field cannot be determined, use empty string for text fields and "medium"/30/"none" for others.
+Example input: "Review chem notes before Friday exam, 45 min"
 Example output:
-{"title":"Finish essay","description":"Complete assignment","energyRequired":"high","estimatedTimeMinutes":90,"deadline":"2026-03-25","recurrence":"none"}
+{"title":"Review chem notes","description":"For the upcoming exam.","energyRequired":"medium","estimatedTimeMinutes":45,"deadline":"2026-03-27","recurrence":"none"}
 
 Energy guide:
 - low: reading, reviewing notes, admin tasks, emails
@@ -180,9 +181,11 @@ Time guide (round to nearest 15):
 - exam prep = 90-180
 - default = 30
 
-Date guide (resolve from today ${today}):
+Date guide (resolve from today: ${today}, which is a ${dayOfWeek}):
+- ALL dates MUST be returned in strict YYYY-MM-DD format.
 - "tomorrow" = next calendar day
 - day name like "Friday" = the coming occurrence of that day
+- specific dates like "25th march" = calculate the exact YYYY-MM-DD for this year (e.g., 2026-03-25).
 - "next week" = 7 days from today
 - "end of week" = coming Sunday
 - no date mentioned = use empty string ""`;
