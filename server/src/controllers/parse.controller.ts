@@ -183,11 +183,12 @@ Date guide (resolve from today ${today}):
       }
     }
 
-    // If all models failed, return error
+    // If all models failed, return error (detail helps debugging on render)
     if (!parsed) {
       console.error('All AI models failed:', lastError);
       res.status(502).json({
         message: 'AI parsing is temporarily unavailable. Please fill in the form manually.',
+        detail: lastError,
       });
       return;
     }

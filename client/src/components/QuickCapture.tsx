@@ -123,8 +123,14 @@ export function QuickCapture({ onConfirm, onClose, isOpen }: QuickCaptureProps) 
       setPreview(data.parsed);
       setStep('preview');
     } catch (err: unknown) {
-      const e = err as { response?: { data?: { message?: string } } };
-      setErrorMsg(e.response?.data?.message ?? 'Could not parse. Try rephrasing.');
+      const e = err as { response?: { data?: { message?: string; detail?: string } } };
+      const serverMessage = e.response?.data?.message;
+      const serverDetail = e.response?.data?.detail;
+      setErrorMsg(
+        serverMessage
+          ? `${serverMessage}${serverDetail ? ` (${serverDetail})` : ''}`
+          : 'Could not parse. Try rephrasing.'
+      );
       setStep('error');
     }
   }
