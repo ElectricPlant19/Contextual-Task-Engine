@@ -12,10 +12,12 @@ interface ParsedTask {
 
 // OpenRouter free models — try in order of preference for JSON extraction
 // If one model is rate-limited, automatically try the next one
+// Note: Free models change frequently, check https://openrouter.ai/models for current options
 const OR_MODELS = [
-  'meta-llama/llama-3.3-70b-instruct:free',  // Best for JSON, but rate limited
+  'meta-llama/llama-3.3-70b-instruct:free',  // Best for JSON, but often rate limited
   'google/gemma-3-27b-it:free',              // Good fallback
   'microsoft/wizardlm-2-8x22b:free',         // Another option
+  'mistralai/mistral-7b-instruct:free',      // Additional fallback
 ];
 const OR_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
@@ -64,11 +66,14 @@ export const parseTaskFromText = async (req: AuthRequest, res: Response): Promis
 
     const apiKey = process.env.OPENROUTER_API_KEY;
     if (!apiKey) {
+      console.error('OPENROUTER_API_KEY not set in environment variables');
       res.status(500).json({
         message: 'AI parsing not configured. Add OPENROUTER_API_KEY to your environment variables.',
       });
       return;
     }
+
+    console.log('Starting AI parsing for text:', text.trim());
 
     const today     = new Date().toISOString().split('T')[0];
     const dayOfWeek = new Date().toLocaleDateString('en-US', { weekday: 'long' });
@@ -113,6 +118,7 @@ Date guide (resolve from today ${today}):
 
     // Try each model in sequence until one works
     for (const model of OR_MODELS) {
+      console.log(`Trying model: ${model}`);
       try {
         const response = await fetch(OR_URL, {
           method: 'POST',
@@ -135,9 +141,11 @@ Date guide (resolve from today ${today}):
 
         if (!response.ok) {
           if (response.status === 429) {
+            console.log(`Model ${model} rate limited (429)`);
             lastError = `Model ${model} is rate-limited`;
             continue; // Try next model
           }
+          console.log(`Model ${model} returned status ${response.status}`);
           lastError = `Model ${model} returned ${response.status}`;
           continue; // Try next model
         }
@@ -161,8 +169,10 @@ Date guide (resolve from today ${today}):
 
         try {
           parsed = extractJSON(rawContent);
+          console.log(`Successfully parsed with model: ${model}`);
           break; // Success! Exit the loop
         } catch {
+          console.log(`Model ${model} returned invalid JSON`);
           lastError = `Model ${model} returned invalid JSON`;
           continue; // Try next model
         }
