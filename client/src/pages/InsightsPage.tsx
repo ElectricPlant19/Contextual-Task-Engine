@@ -283,10 +283,10 @@ export function InsightsPage() {
             {energy.total > 1 && (
               <div className="insight-blurb">
                 {energy.low >= energy.med && energy.low >= energy.high
-                  ? '💡 You tend to do your best work during low-energy sessions — consistent progress beats big bursts.'
+                  ? '💡 You tend to do your best work during low-energy sessions - consistent progress beats big bursts.'
                   : energy.high >= energy.med && energy.high >= energy.low
-                  ? '⚡ You're crushing high-effort tasks. Make sure to protect your peak focus hours.'
-                  : '☀️ Balanced energy across task types — great variety and sustainable momentum.'}
+                  ? '⚡ You\'re crushing high-effort tasks. Make sure to protect your peak focus hours.'
+                  : '☀️ Balanced energy across task types - great variety and sustainable momentum.'}
               </div>
             )}
           </div>
