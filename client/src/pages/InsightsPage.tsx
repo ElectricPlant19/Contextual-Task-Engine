@@ -188,7 +188,7 @@ export function InsightsPage() {
 
           <div className="heatmap-wrap">
             <div className="heatmap-grid">
-              {heatmap.map((cell, i) => (
+              {heatmap.map((cell) => (
                 <div
                   key={cell.key}
                   className="heat-cell"
@@ -207,7 +207,7 @@ export function InsightsPage() {
             </div>
             <div className="heatmap-legend">
               <span style={{ color: 'var(--text-muted)', fontSize: '0.6875rem' }}>Less</span>
-              {[0,1,2,3,4].map(n => (
+              {[0,1,2,3,4].map((n) => (
                 <div key={n} className="heat-cell" style={{ background: heatColor(n), flexShrink: 0 }} />
               ))}
               <span style={{ color: 'var(--text-muted)', fontSize: '0.6875rem' }}>More</span>
