@@ -10,10 +10,14 @@ interface ParsedTask {
   recurrence: 'none' | 'daily' | 'weekly' | 'monthly';
 }
 
-// OpenRouter free model — Llama 3.3 70B is the best free option for JSON extraction.
-// Fallback: "google/gemma-3-27b-it:free" if this hits rate limits.
-const OR_MODEL = 'meta-llama/llama-3.3-70b-instruct:free';
-const OR_URL   = 'https://openrouter.ai/api/v1/chat/completions';
+// OpenRouter free models — try in order of preference for JSON extraction
+// If one model is rate-limited, automatically try the next one
+const OR_MODELS = [
+  'meta-llama/llama-3.3-70b-instruct:free',  // Best for JSON, but rate limited
+  'google/gemma-3-27b-it:free',              // Good fallback
+  'microsoft/wizardlm-2-8x22b:free',         // Another option
+];
+const OR_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
 /**
  * Robustly extract the first valid JSON object from a string.
@@ -104,67 +108,76 @@ Date guide (resolve from today ${today}):
 
     const userPrompt = `Parse this student task: "${text.trim()}"`;
 
-    const response = await fetch(OR_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-        'HTTP-Referer': process.env.APP_URL ?? 'https://localhost:5000',
-        'X-Title': 'Contextual Task Engine',
-      },
-      body: JSON.stringify({
-        model: OR_MODEL,
-        max_tokens: 300,
-        temperature: 0.1,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user',   content: userPrompt   },
-        ],
-      }),
-    });
+    let lastError = '';
+    let parsed: ParsedTask | null = null;
 
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error('OpenRouter error:', response.status, errText);
-
-      if (response.status === 429) {
-        res.status(429).json({
-          message: 'AI is rate-limited right now. Wait a moment and try again, or fill in manually.',
+    // Try each model in sequence until one works
+    for (const model of OR_MODELS) {
+      try {
+        const response = await fetch(OR_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`,
+            'HTTP-Referer': process.env.APP_URL ?? 'https://localhost:5000',
+            'X-Title': 'Contextual Task Engine',
+          },
+          body: JSON.stringify({
+            model,
+            max_tokens: 300,
+            temperature: 0.1,
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user',   content: userPrompt   },
+            ],
+          }),
         });
-        return;
+
+        if (!response.ok) {
+          if (response.status === 429) {
+            lastError = `Model ${model} is rate-limited`;
+            continue; // Try next model
+          }
+          lastError = `Model ${model} returned ${response.status}`;
+          continue; // Try next model
+        }
+
+        const data = await response.json() as {
+          choices?: Array<{ message?: { content?: string } }>;
+          error?: { message: string };
+        };
+
+        if (data.error) {
+          lastError = `Model ${model} error: ${data.error.message}`;
+          continue; // Try next model
+        }
+
+        const rawContent = data.choices?.[0]?.message?.content ?? '';
+
+        if (!rawContent.trim()) {
+          lastError = `Model ${model} returned empty response`;
+          continue; // Try next model
+        }
+
+        try {
+          parsed = extractJSON(rawContent);
+          break; // Success! Exit the loop
+        } catch {
+          lastError = `Model ${model} returned invalid JSON`;
+          continue; // Try next model
+        }
+
+      } catch (error) {
+        lastError = `Network error with ${model}: ${error}`;
+        continue; // Try next model
       }
+    }
 
+    // If all models failed, return error
+    if (!parsed) {
+      console.error('All AI models failed:', lastError);
       res.status(502).json({
-        message: 'AI service unavailable. Please fill in the form manually.',
-      });
-      return;
-    }
-
-    const data = await response.json() as {
-      choices?: Array<{ message?: { content?: string } }>;
-      error?: { message: string };
-    };
-
-    if (data.error) {
-      console.error('OpenRouter body error:', data.error);
-      res.status(502).json({ message: 'AI service returned an error. Please try again.' });
-      return;
-    }
-
-    const rawContent = data.choices?.[0]?.message?.content ?? '';
-
-    if (!rawContent.trim()) {
-      res.status(422).json({ message: 'AI returned an empty response. Try rephrasing.' });
-      return;
-    }
-
-    let parsed: ParsedTask;
-    try {
-      parsed = extractJSON(rawContent);
-    } catch {
-      console.error('Failed to extract JSON from:', rawContent);
-      res.status(422).json({
-        message: 'Could not parse that. Try: "finish essay by Friday, 2 hours, high energy".',
+        message: 'AI parsing is temporarily unavailable. Please fill in the form manually.',
       });
       return;
     }
