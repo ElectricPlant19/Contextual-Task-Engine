@@ -4,3 +4,4 @@ export { ContextInputPanel } from './ContextInputPanel';
 export { RecommendationCard } from './RecommendationCard';
 export { TaskModal } from './TaskModal';
 export { TaskList } from './TaskList';
+export { QuickCapture } from './QuickCapture';

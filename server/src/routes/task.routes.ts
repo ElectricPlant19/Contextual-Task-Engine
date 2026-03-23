@@ -9,6 +9,7 @@ import {
     uncompleteTask,
     getRecommendation,
 } from '../controllers';
+import { parseTaskFromText } from '../controllers/parse.controller';
 import { authMiddleware } from '../middleware';
 
 const router = Router();
@@ -50,13 +51,24 @@ const recommendValidation = [
         .withMessage('Energy level must be low, medium, or high'),
 ];
 
-// Routes
+const parseValidation = [
+    body('text')
+        .trim()
+        .notEmpty()
+        .withMessage('Text is required')
+        .isLength({ max: 500 })
+        .withMessage('Input must be under 500 characters'),
+];
+
+// ── Routes ──────────────────────────────────────────────────
+// IMPORTANT: specific paths before /:id wildcards
 router.get('/', getTasks);
+router.post('/parse', parseValidation, parseTaskFromText);
+router.post('/recommend', recommendValidation, getRecommendation);
 router.post('/', taskValidation, createTask);
 router.put('/:id', taskValidation, updateTask);
 router.delete('/:id', deleteTask);
 router.patch('/:id/complete', completeTask);
 router.patch('/:id/uncomplete', uncompleteTask);
-router.post('/recommend', recommendValidation, getRecommendation);
 
 export default router;
