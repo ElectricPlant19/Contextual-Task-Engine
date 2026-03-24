@@ -3,7 +3,6 @@ import cors from 'cors';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import { authRoutes, taskRoutes } from './routes';
-import path from 'path';
 
 // Load environment variables
 dotenv.config();
@@ -24,17 +23,9 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', message: 'Contextual Task Engine API is running' });
 });
 
-// Serve frontend static files
-app.use(express.static(path.join(__dirname, '../../client/dist')));
-
-// Catch-all route to serve React index.html for client-side routing
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../../client/dist', 'index.html'));
-});
-
-// 404 handler for API routes (optional, as the catch-all above will handle most)
-app.use('/api/*', (req, res) => {
-    res.status(404).json({ message: 'API Route not found' });
+// 404 handler
+app.use((req, res) => {
+    res.status(404).json({ message: 'Route not found' });
 });
 
 // Error handler
