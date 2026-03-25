@@ -165,9 +165,21 @@ Output MUST be parseable JSON exactly matching this schema:
 }
 
 If a field cannot be determined, use empty string for text fields and "medium"/30/"none" for others.
-Example input: "Review chem notes before Friday exam, 45 min"
+
+TITLE EXTRACTION RULES:
+- Extract a SHORT title (2-6 words max) that captures the core action
+- Remove time estimates, deadlines, energy mentions from the title
+- Use verb-first phrasing: "Review chem notes" not "Review chem notes before Friday exam 45 min"
+- Never copy the entire input as the title
+
+DESCRIPTION EXTRACTION RULES:
+- Move all details NOT needed in the title to description
+- Include: context, reasons, constraints, energy mentions, time estimates if descriptive
+- Example: title="Review chem notes", description="Before Friday exam, low energy ok, 45 min"
+
+Example input: "Review chem notes before Friday exam, low energy ok, 45 min"
 Example output:
-{"title":"Review chem notes","description":"For the upcoming exam.","energyRequired":"medium","estimatedTimeMinutes":45,"deadline":"2026-03-27","recurrence":"none"}
+{"title":"Review chem notes","description":"Before Friday exam, low energy ok.","energyRequired":"low","estimatedTimeMinutes":45,"deadline":"2026-03-27","recurrence":"none"}
 
 Energy guide:
 - low: reading, reviewing notes, admin tasks, emails
